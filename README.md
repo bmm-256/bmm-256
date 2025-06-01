@@ -1,16 +1,30 @@
-# BMM-256 — Bitcoin Mnemonic Map
+# BPM-256 — Bitcoin Pixel Mnemonic
 
-**BMM-256** — это первая в своём роде реализация визуализации сид-фраз BIP-39 в виде пиксельной сетки 16×16.
+**BPM-256** is a visual encoder for 24-word BIP-39 seed phrases and 64-character hexadecimal entropy values.
 
-- Поддержка ввода сид-фразы и HEX
-- Визуальное представление энтропии
-- Редактируемая пиксельная сетка
-- Выбор цвета 0 и 1
-- Экспорт в PNG
-- Проверка валидности и генерация checksum
-- Официальная реализация протокола `BMM-256`
+This tool transforms cryptographic entropy into a precise **16×16 pixel grid**, allowing for:
 
-> До этого существовали только визуализаторы приватных ключей. Этот проект впервые представляет именно сид-фразы как визуальные структуры.
+- 🔒 Cold storage visual backups  
+- 🎨 Bitcoin Ordinals art and inscriptions  
+- 🧠 Pattern analysis of mnemonic seeds  
+- 📷 Lossless PNG export of the visual layout
 
-Автор: [@bmm-256](https://github.com/bmm-256)  
-Лицензия: MIT
+## How it works
+
+- Input a 24-word BIP-39 seed or a 64-character hex string  
+- Each bit is mapped to a pixel: `1 = dark`, `0 = light` (fully customizable)  
+- The result is a deterministic, lossless, minimal visual hash  
+- Perfect for embedding into NFTs, hardware wallets, or research
+
+> ⚠️ Do not use real wallet seed phrases. This tool is for visual experimentation and artistic exploration.
+
+## Author
+
+Built by **@pixel_mnemonic** — Bitcoin researcher, artist, and explorer of BIP-39 cryptography.
+
+Follow the project:
+[Twitter →](https://twitter.com/pixel_mnemonic)
+
+## License
+
+MIT — free to use, modify, and adapt. Attribution appreciated.
