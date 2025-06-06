@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>bpm-256 — Bitcoin Pixel Mnemonic</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 40px;
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      color: #000;
+      line-height: 1.6;
+    }
+    h1, h2, h3 {
+      color: #111;
+    }
+    code, pre {
+      background: #f4f4f4;
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: block;
+      overflow-x: auto;
+    }
+    img {
+      max-width: 100%;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+    }
+    hr {
+      margin: 30px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>bpm-256 — Bitcoin Pixel Mnemonic</h1>
+
+  <p><strong>bpm-256</strong> is an open protocol and reference implementation for representing BIP-39 seed phrases as 16×16 pixel grids.
+  It provides a visual and editable interface for entropy, enabling precise, deterministic encoding of BIP-39 data as an image.</p>
+
+  <h2>Features</h2>
+  <ul>
+    <li>Visual representation of 256-bit entropy</li>
+    <li>Support for BIP-39 seed phrases and raw HEX input</li>
+    <li>Editable 16×16 pixel grid (1 pixel = 1 bit)</li>
+    <li>Custom colors for bits 0 and 1</li>
+    <li>PNG export</li>
+    <li>Validity check and automatic checksum generation (BIP-39 compliant)</li>
+    <li>Fully client-side and offline-capable</li>
+    <li>Official reference implementation of the <code>bpm-256</code> protocol</li>
+  </ul>
+
+  <h2>Specification</h2>
+  <ul>
+    <li>Protocol: <code>bpm-256</code> (Bitcoin Pixel Mnemonic)</li>
+    <li>Input entropy: 256 bits (32 bytes)</li>
+    <li>Output: 24-word BIP-39 seed phrase</li>
+    <li>Grid size: 16×16 pixels</li>
+    <li>1 pixel = 1 bit (white = 0, black = 1 by default)</li>
+    <li>Checksum: 8 bits derived from SHA-256(entropy)</li>
+    <li>Wordlist: standard English BIP-39 (2048 words)</li>
+  </ul>
+
+  <h2>Examples</h2>
+
+  <h3>Example 1 — Repeating Entropy Pattern</h3>
+  <p><strong>Entropy (HEX):</strong></p>
+  <pre>eb1d63ac758eb1d63ac758eb1d63ac758fdbfb7f6fedfdbfb7f6fedfdbfb7f6f</pre>
+  <p><strong>Mnemonic:</strong></p>
+  <pre>twelve twelve twelve twelve twelve twelve twelve twelve twelve twelve twelve twelve
+world world world world world world world world world world world world</pre>
+  <img src="examples/1.png" alt="Example 1">
+  <hr>
+
+  <h3>Example 2 — Bit Shift Diagonal</h3>
+  <p><strong>Entropy (HEX):</strong></p>
+  <pre>000100030007000f001f003f007f00ff01ff03ff07ff0fff1fff3fff7fffffff</pre>
+  <p><strong>Mnemonic:</strong></p>
+  <pre>abandon amount absorb abandon hybrid always about theme disease advance scan wrap
+cable limit winter zoo avocado wedding zone lend wave zoo zoo unknown</pre>
+  <img src="examples/2.png" alt="Example 2">
+  <hr>
+
+  <h3>Example 3 — Checkerboard Pattern</h3>
+  <p><strong>Entropy (HEX):</strong></p>
+  <pre>aaaa5555aaaa5555aaaa5555aaaa5555aaaa5555aaaa5555aaaa5555aaaa5555</pre>
+  <p><strong>Mnemonic:</strong></p>
+  <pre>primary famous fever fetch pipe print primary enjoy fiber fetch next prize
+primary click find fetch fetch pull pride primary follow festival fetch pool</pre>
+  <img src="examples/3.png" alt="Example 3">
+  <hr>
+
+  <h3>Example 4 — Random Entropy</h3>
+  <p><strong>Entropy (HEX):</strong></p>
+  <pre>4ab3be4c63b9de93b55c431dd6a636f55b5fb86a5739a52a9dc3049bd2d636bb</pre>
+  <p><strong>Mnemonic:</strong></p>
+  <pre>enjoy over narrow shuffle over endorse step mask build release misery turkey
+remove switch power transfer pioneer female ignore ankle rule help sustain hockey</pre>
+  <img src="examples/4.png" alt="Example 4">
+
+  <hr>
+  <p><strong>License:</strong> MIT © <a href="https://github.com/bpm-256">@bpm-256</a></p>
+</body>
+</html>
