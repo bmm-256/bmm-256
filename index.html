@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>bpm-256 — bitcoin pixel mnemonic</title>
+  <script>
+    let wordlist = [];
+    fetch("https://raw.githubusercontent.com/bitcoin/bips/master/bip-0039/english.txt")
+      .then(response => response.text())
+      .then(text => {
+        wordlist = text.trim().split("\n");
+      });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/upng-js@2.1.0/UPNG.js"></script>
+ <style>
+  
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body {
+    background: #000;
+    color: #fff;
+    font-family: monospace;
+    font-size: 16px;
+    line-height: 1.4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: start;
+    padding-top: 20px;
+  }
+
+  button, input, textarea, select {
+    font-family: monospace;
+    font-size: 16px;
+    background-color: #000;
+    color: #fff;
+    border: 1px solid #fff;
+    padding: 6px 10px;
+    margin: 5px;
+    outline: none;
+    appearance: none;
+  }
+button {
+  font-size: 14px;
+  height: 30px;        
+  padding: 2px 10px;   
+  font-family: monospace;
+  width: 100%;
+}
+
+
+  input[type="color"] {
+    width: 120px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid #fff;
+    background-color: #000;
+    cursor: pointer;
+  }
+
+  .controls {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    margin: 20px auto 0 auto;
+    gap: 30px;
+    transform: translateX(80px);
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+
+  .input-group textarea {
+  width: 600px;
+  padding: 10px 5px 20px 5px;
+  resize: none;
+  text-align: center;
+  line-height: 1.5;
+  height: 90px;
+  font-family: monospace;
+  font-size: 14px;
+}
+
+
+  .grid-wrapper {
+    padding: 10px;
+    border-radius: 8px;
+    background: #323232;
+    display: flex;
+    justify-content: center;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(16, 19px);
+    grid-template-rows: repeat(16, 19px);
+    gap: 1px;
+  }
+
+  .pixel {
+    width: 19px;
+    height: 19px;
+    border-radius: 0;
+    background: white;
+    transition: background 0.1s;
+    cursor: pointer;
+  }
+
+  .pixel.active {
+    background: black;
+  }
+
+  .overlay-color-button {
+    position: relative;
+    width: 120px;
+    margin-bottom: 10px;
+  }
+
+  .overlay-color-button input[type="color"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .side-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-left: 10px;
+  }
+</style>
+
+</head>
+<body>
+  <div class="input-group">
+  <label style="font-size: 16px; font-family: monospace; margin-bottom: 20px;">Do not enter real wallet seed phrases.</label>
+ <div style="text-align: center; width: 600px; font-size: 16px; font-family: monospace;  color: #ccc; margin-bottom: 10px;">
+  bpm-256 — bitcoin pixel mnemonic
+</div>
+
+  <textarea id="mnemonicInput"></textarea>
+
+</div>
+
+  <div class="controls">
+   <div class="grid-wrapper" style="position: relative;">
+  <div id="pixelWarning" style="display: none; position: absolute; top: 10px; left: 0; width: 100%; text-align: center; font-size: 20px; font-family: monospace; color: #ff0000; z-index: 10;">
+    1 should be darker than 0
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+
+    <div class="side-panel">
+      <div class="overlay-color-button">
+        <button style="width: 100%;">Color for 1</button>
+        <input type="color" id="colorOne" value="#000000">
+      </div>
+
+      <div class="overlay-color-button">
+        <button style="width: 100%;">Color for 0</button>
+        <input type="color" id="colorZero" value="#ffffff">
+      </div>
+
+      <div class="overlay-color-button">
+        <button style="width: 100%;">Grid Color</button>
+        <input type="color" id="gridBackground" value="#323232">
+      </div>
+
+      <div class="overlay-color-button">
+        <button style="width: 100%;" onclick="clearGrid()">Clear</button>
+      </div>
+
+      <div class="overlay-color-button">
+        <button style="width: 100%;" onclick="saveAsPNG()">Save PNG</button>
+      </div>
+    </div>
+  </div>
+
+ <div class="input-group" style="margin-top: 20px;">
+    <label style="font-size: 14px; font-family: monospace;">Enter HEX (64 characters):</label>
+    <input id="seedInput" type="text" style="width: 600px; text-align: center; font-family: monospace; font-size: 14px;">
+  </div>
+
+  <canvas id="canvas" width="323" height="323" style="display:none;"></canvas>
+</body>
+</html>
+
+</body>
+</html>
+
+<script>
+const grid = document.getElementById("grid");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const seedInput = document.getElementById("seedInput");
+const mnemonicInput = document.getElementById("mnemonicInput");
+const pixelElements = [];
+let warningVisible = false;
+
+function getBinaryFromGrid() {
+  return pixelElements.map(p => p.classList.contains("active") ? '1' : '0').join('');
+}
+
+function updateSeedFromGrid() {
+  const binary = getBinaryFromGrid();
+  const hex = BigInt('0b' + binary).toString(16).padStart(64, '0');
+  seedInput.value = hex;
+  if (wordlist.length === 2048) {
+    const entropyBytes = [];
+    for (let i = 0; i < 256; i += 8) {
+      const byte = binary.slice(i, i + 8);
+      entropyBytes.push(parseInt(byte, 2));
+    }
+    crypto.subtle.digest("SHA-256", new Uint8Array(entropyBytes)).then(hashBuffer => {
+      const hashBytes = new Uint8Array(hashBuffer);
+      const checksumBits = hashBytes[0].toString(2).padStart(8, "0").slice(0, 8);
+      const fullBits = binary + checksumBits;
+      const words = [];
+      for (let i = 0; i < 264; i += 11) {
+        const segment = fullBits.slice(i, i + 11);
+        const index = parseInt(segment, 2);
+        words.push(wordlist[index] || "???");
+      }
+      mnemonicInput.value = words.join(" ");
+    });
+  }
+}
+
+function initializeGrid() {
+  grid.innerHTML = "";
+  pixelElements.length = 0;
+  for (let i = 0; i < 256; i++) {
+    const pixel = document.createElement("div");
+    pixel.classList.add("pixel");
+    pixel.dataset.index = i;
+    pixel.style.background = document.getElementById("colorZero").value;
+    pixel.addEventListener("click", () => {
+      pixel.classList.toggle("active");
+      pixel.style.background = pixel.classList.contains("active") ? document.getElementById("colorOne").value : document.getElementById("colorZero").value;
+      updateSeedFromGrid();
+    });
+    grid.appendChild(pixel);
+    pixelElements.push(pixel);
+  }
+}
+
+function clearGrid() {
+  const colorZero = document.getElementById("colorZero").value;
+  pixelElements.forEach(p => {
+    p.classList.remove("active");
+    p.style.background = colorZero;
+  });
+  mnemonicInput.value = "";
+  seedInput.value = "";
+}
+
+function saveAsPNG() {
+if (!isColorOneDarker()) {
+  if (warningVisible) return;
+  warningVisible = true;
+
+  const warningEl = document.getElementById("pixelWarning");
+  warningEl.style.display = "block";
+
+  setTimeout(() => {
+    warningEl.style.display = "none";
+    warningVisible = false;
+  }, 3000);
+  return;
+}
+
+
+  const pixelSize = 19;
+  const gap = 1;
+  const gridSize = 16;
+
+  canvas.width = 323;
+  canvas.height = 323;
+
+  ctx.fillStyle = getComputedStyle(document.querySelector(".grid-wrapper")).backgroundColor;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  pixelElements.forEach((pixel, i) => {
+    const x = 2 + (i % gridSize) * (pixelSize + gap);
+    const y = 2 + Math.floor(i / gridSize) * (pixelSize + gap);
+    ctx.fillStyle = pixel.classList.contains("active")
+      ? document.getElementById("colorOne").value
+      : document.getElementById("colorZero").value;
+    ctx.fillRect(x, y, pixelSize, pixelSize);
+  });
+
+  const link = document.createElement("a");
+  link.download = "bpm-256.png";
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+}
+
+function renderBits(binStr) {
+  const colorOne = document.getElementById("colorOne").value;
+  const colorZero = document.getElementById("colorZero").value;
+  for (let i = 0; i < binStr.length && i < pixelElements.length; i++) {
+    if (binStr[i] === '1') {
+      pixelElements[i].classList.add("active");
+      pixelElements[i].style.background = colorOne;
+    } else {
+      pixelElements[i].classList.remove("active");
+      pixelElements[i].style.background = colorZero;
+    }
+  }
+}
+
+function mnemonicToEntropyBits(mnemonic) {
+  const words = mnemonic.trim().split(/\s+/);
+  if (words.length !== 24) return null;
+  let bits = "";
+  for (const word of words) {
+    const index = wordlist.indexOf(word);
+    if (index === -1) return null;
+    bits += index.toString(2).padStart(11, '0');
+  }
+  return bits.slice(0, 256);
+}
+
+function visualizeSeed() {
+  try {
+    const mnemonic = mnemonicInput.value.trim().replace(/[\n\r]+/g, ' ').replace(/\s+/g, ' ').toLowerCase();
+    const binary = mnemonicToEntropyBits(mnemonic);
+    if (!binary || binary.length !== 256) throw new Error("Invalid seed");
+    renderBits(binary);
+    const hex = BigInt('0b' + binary).toString(16).padStart(64, '0');
+    seedInput.value = hex;
+  } catch (e) {}
+}
+
+function visualizeHex() {
+  const hex = seedInput.value.trim().toLowerCase().replace(/[^a-f0-9]/g, '');
+  if (hex.length !== 64) return;
+  const binary = BigInt("0x" + hex).toString(2).padStart(256, '0');
+  renderBits(binary);
+  if (wordlist.length === 2048) {
+    const entropyBytes = [];
+    for (let i = 0; i < 256; i += 8) {
+      const byte = binary.slice(i, i + 8);
+      entropyBytes.push(parseInt(byte, 2));
+    }
+    crypto.subtle.digest("SHA-256", new Uint8Array(entropyBytes)).then(hashBuffer => {
+      const hashBytes = new Uint8Array(hashBuffer);
+      const checksumBits = hashBytes[0].toString(2).padStart(8, "0").slice(0, 8);
+      const fullBits = binary + checksumBits;
+      const words = [];
+      for (let i = 0; i < 264; i += 11) {
+        const segment = fullBits.slice(i, i + 11);
+        const index = parseInt(segment, 2);
+        words.push(wordlist[index] || "???");
+      }
+      mnemonicInput.value = words.join(" ");
+    });
+  }
+}
+
+function updateGridBackground() {
+  const gridWrapper = document.querySelector(".grid-wrapper");
+  const color = document.getElementById("gridBackground").value;
+  gridWrapper.style.backgroundColor = color;
+}
+
+function isColorOneDarker() {
+  const c1 = document.getElementById("colorOne").value;
+  const c0 = document.getElementById("colorZero").value;
+
+  function hexToRgb(hex) {
+    const bigint = parseInt(hex.slice(1), 16);
+    return [
+      (bigint >> 16) & 255,
+      (bigint >> 8) & 255,
+      bigint & 255
+    ];
+  }
+
+  function luminance(rgb) {
+    return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+  }
+
+  return luminance(hexToRgb(c1)) < luminance(hexToRgb(c0));
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  mnemonicInput.addEventListener("input", visualizeSeed);
+  seedInput.addEventListener("input", visualizeHex);
+
+  document.getElementById("colorZero").addEventListener("input", () => {
+    pixelElements.forEach(p => {
+      if (!p.classList.contains("active")) {
+        p.style.background = document.getElementById("colorZero").value;
+      }
+    });
+  });
+
+  document.getElementById("colorOne").addEventListener("input", () => {
+    pixelElements.forEach(p => {
+      if (p.classList.contains("active")) {
+        p.style.background = document.getElementById("colorOne").value;
+      }
+    });
+  });
+
+  document.getElementById("gridBackground").addEventListener("input", () => {
+    const gridWrapper = document.querySelector(".grid-wrapper");
+    gridWrapper.style.backgroundColor = document.getElementById("gridBackground").value;
+  });
+
+  initializeGrid();
+  visualizeSeed();
+  visualizeHex();
+});
+</script>
+
+
+</body>
+</html>
+
