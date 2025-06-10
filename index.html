@@ -1,8 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>bpm-256 — bitcoin pixel mnemonic</title>
+
+  <!-- Load official English BIP39 wordlist from GitHub -->
   <script>
     let wordlist = [];
     fetch("https://raw.githubusercontent.com/bitcoin/bips/master/bip-0039/english.txt")
@@ -11,14 +11,16 @@
         wordlist = text.trim().split("\n");
       });
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/upng-js@2.1.0/UPNG.js"></script>
+
   <style>
+    /* Reset and box model setup */
     *, *::before, *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
 
+    /* Main layout and typography */
     html, body {
       background: #000;
       color: #fff;
@@ -32,6 +34,7 @@
       padding-top: 20px;
     }
 
+    /* Form controls: buttons, inputs, select, etc. */
     button, input, textarea, select {
       font-family: monospace;
       font-size: 16px;
@@ -48,7 +51,6 @@
       font-size: 14px;
       height: 30px;
       padding: 2px 10px;
-      font-family: monospace;
       width: 100%;
     }
 
@@ -60,7 +62,7 @@
       background-color: #000;
       cursor: pointer;
     }
-
+    /* Container for the grid and color controls */
     .controls {
       display: flex;
       flex-direction: row;
@@ -68,9 +70,10 @@
       align-items: flex-start;
       margin: 20px auto 0 auto;
       gap: 30px;
-      transform: translateX(80px);
+      transform: translateX(80px); /* slight shift to align grid */
     }
 
+    /* Vertical block for input areas */
     .input-group {
       display: flex;
       flex-direction: column;
@@ -85,10 +88,10 @@
       text-align: center;
       line-height: 1.5;
       height: 90px;
-      font-family: monospace;
       font-size: 14px;
     }
 
+    /* Container around the pixel grid */
     .grid-wrapper {
       padding: 10px;
       border-radius: 8px;
@@ -99,6 +102,7 @@
       position: relative;
     }
 
+    /* 16x16 pixel grid layout with gaps */
     .grid {
       display: grid;
       grid-template-columns: repeat(16, 19px);
@@ -106,10 +110,10 @@
       gap: 1px;
     }
 
+    /* Each individual pixel cell */
     .pixel {
       width: 19px;
       height: 19px;
-      border-radius: 0;
       background: white;
       transition: background 0.1s;
       cursor: pointer;
@@ -119,6 +123,7 @@
       background: black;
     }
 
+    /* Style wrapper for each color input */
     .overlay-color-button {
       position: relative;
       width: 120px;
@@ -135,31 +140,44 @@
       cursor: pointer;
     }
 
+    /* Right-side vertical panel for all buttons */
     .side-panel {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
       margin-left: 10px;
     }
-  </style>
+ </style>
 </head>
 <body>
+  <!-- Warning and title area -->
   <div class="input-group">
-    <label style="font-size: 16px; font-family: monospace; margin-bottom: 20px;">Do not enter real wallet seed phrases.</label>
+    <label style="font-size: 16px; font-family: monospace; margin-bottom: 20px;">
+      Do not enter real wallet seed phrases.
+    </label>
     <div style="text-align: center; width: 600px; font-size: 16px; font-family: monospace; color: #ccc; margin-bottom: 10px;">
       bpm-256 — bitcoin pixel mnemonic
     </div>
+    <!-- User input for mnemonic phrase (24 words) -->
     <textarea id="mnemonicInput"></textarea>
   </div>
 
   <div class="controls">
+    <!-- Pixel grid and overlay warning -->
     <div class="grid-wrapper">
-      <div id="pixelWarning" style="display: none; position: absolute; top: 10px; left: 0; width: 100%; text-align: center; font-size: 20px; font-family: monospace; color: #ff0000; z-index: 10;">
+      <!-- Warning message for color rule (1 must be darker than 0) -->
+      <div id="pixelWarning"
+           style="display: none; position: absolute; top: 10px; left: 0; width: 100%;
+                  text-align: center; font-size: 20px; font-family: monospace;
+                  color: #ff0000; z-index: 10;">
         1 should be darker than 0
       </div>
+
+      <!-- Main 16x16 grid container -->
       <div class="grid" id="grid"></div>
     </div>
 
+    <!-- Right side panel with color pickers and buttons -->
     <div class="side-panel">
       <div class="overlay-color-button">
         <button>Color for 1</button>
@@ -182,14 +200,19 @@
     </div>
   </div>
 
+  <!-- HEX input field for 256-bit entropy -->
   <div class="input-group" style="margin-top: 20px;">
-    <label style="font-size: 14px; font-family: monospace;">Enter HEX (64 characters):</label>
-    <input id="seedInput" type="text" style="width: 600px; text-align: center; font-family: monospace; font-size: 14px;">
+    <label style="font-size: 14px; font-family: monospace;">
+      Enter HEX (64 characters):
+    </label>
+    <input id="seedInput" type="text"
+           style="width: 600px; text-align: center; font-family: monospace; font-size: 14px;">
   </div>
 
+  <!-- Hidden canvas used for PNG export -->
   <canvas id="canvas" width="323" height="323" style="display:none;"></canvas>
-
   <script>
+    // DOM references and shared state
     const grid = document.getElementById("grid");
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
@@ -198,53 +221,68 @@
     const pixelElements = [];
     let warningVisible = false;
 
+    // Converts current grid state to 256-bit binary string
     function getBinaryFromGrid() {
-      return pixelElements.map(p => p.classList.contains("active") ? '1' : '0').join('');
+      return pixelElements.map(p =>
+        p.classList.contains("active") ? '1' : '0'
+      ).join('');
     }
 
+    // Updates HEX and mnemonic based on grid state
     function updateSeedFromGrid() {
       const binary = getBinaryFromGrid();
       const hex = BigInt('0b' + binary).toString(16).padStart(64, '0');
       seedInput.value = hex;
+
       if (wordlist.length === 2048) {
         const entropyBytes = [];
         for (let i = 0; i < 256; i += 8) {
           const byte = binary.slice(i, i + 8);
           entropyBytes.push(parseInt(byte, 2));
         }
+
         crypto.subtle.digest("SHA-256", new Uint8Array(entropyBytes)).then(hashBuffer => {
           const hashBytes = new Uint8Array(hashBuffer);
           const checksumBits = hashBytes[0].toString(2).padStart(8, "0").slice(0, 8);
           const fullBits = binary + checksumBits;
+
           const words = [];
           for (let i = 0; i < 264; i += 11) {
             const segment = fullBits.slice(i, i + 11);
             const index = parseInt(segment, 2);
             words.push(wordlist[index] || "???");
           }
+
           mnemonicInput.value = words.join(" ");
         });
       }
     }
 
+    // Initializes the 16x16 grid and click events
     function initializeGrid() {
       grid.innerHTML = "";
       pixelElements.length = 0;
+
       for (let i = 0; i < 256; i++) {
         const pixel = document.createElement("div");
         pixel.classList.add("pixel");
         pixel.dataset.index = i;
         pixel.style.background = document.getElementById("colorZero").value;
+
         pixel.addEventListener("click", () => {
           pixel.classList.toggle("active");
-          pixel.style.background = pixel.classList.contains("active") ? document.getElementById("colorOne").value : document.getElementById("colorZero").value;
+          pixel.style.background = pixel.classList.contains("active")
+            ? document.getElementById("colorOne").value
+            : document.getElementById("colorZero").value;
           updateSeedFromGrid();
         });
+
         grid.appendChild(pixel);
         pixelElements.push(pixel);
       }
     }
 
+    // Resets the grid and clears inputs
     function clearGrid() {
       const colorZero = document.getElementById("colorZero").value;
       pixelElements.forEach(p => {
@@ -254,8 +292,7 @@
       mnemonicInput.value = "";
       seedInput.value = "";
     }
-
-    function saveAsPNG() {
+function saveAsPNG() {
       if (!isColorOneDarker()) {
         if (warningVisible) return;
         warningVisible = true;
@@ -295,9 +332,12 @@
       link.click();
     }
 
+
+    // Renders a 256-bit binary string to the pixel grid
     function renderBits(binStr) {
       const colorOne = document.getElementById("colorOne").value;
       const colorZero = document.getElementById("colorZero").value;
+
       for (let i = 0; i < binStr.length && i < pixelElements.length; i++) {
         if (binStr[i] === '1') {
           pixelElements[i].classList.add("active");
@@ -308,62 +348,86 @@
         }
       }
     }
-
-    function mnemonicToEntropyBits(mnemonic) {
-      const words = mnemonic.trim().split(/\s+/);
-      if (words.length !== 24) return null;
-      let bits = "";
-      for (const word of words) {
-        const index = wordlist.indexOf(word);
-        if (index === -1) return null;
-        bits += index.toString(2).padStart(11, '0');
-      }
-      return bits.slice(0, 256);
-    }
-
+    // Converts and visualizes a valid 24-word BIP39 mnemonic
     function visualizeSeed() {
       try {
-        const mnemonic = mnemonicInput.value.trim().replace(/[\n\r]+/g, ' ').replace(/\s+/g, ' ').toLowerCase();
-        const binary = mnemonicToEntropyBits(mnemonic);
-        if (!binary || binary.length !== 256) throw new Error("Invalid seed");
-        renderBits(binary);
-        const hex = BigInt('0b' + binary).toString(16).padStart(64, '0');
-        seedInput.value = hex;
-      } catch (e) {}
+        const mnemonic = mnemonicInput.value
+          .trim()
+          .replace(/[\n\r]+/g, ' ')
+          .replace(/\s+/g, ' ')
+          .toLowerCase();
+
+        if (!mnemonic || mnemonic.length < 10) return; // Ignore empty or too-short input
+
+        const words = mnemonic.split(' ');
+        if (words.length !== 24) throw new Error("Wrong word count");
+        if (!words.every(w => wordlist.includes(w))) throw new Error("Unknown word");
+
+        const indexes = words.map(w => wordlist.indexOf(w));
+        const bits = indexes.map(i => i.toString(2).padStart(11, '0')).join('');
+        const entropyBits = bits.slice(0, 256);
+        const checksumBits = bits.slice(256);
+
+        const entropyBytes = [];
+        for (let i = 0; i < 256; i += 8) {
+          entropyBytes.push(parseInt(entropyBits.slice(i, i + 8), 2));
+        }
+
+        crypto.subtle.digest("SHA-256", new Uint8Array(entropyBytes)).then(hashBuffer => {
+          const hashByte = new Uint8Array(hashBuffer)[0];
+          const realChecksum = hashByte.toString(2).padStart(8, '0').slice(0, 8);
+          if (checksumBits !== realChecksum) throw new Error("Checksum mismatch");
+
+          renderBits(entropyBits);
+          const hex = BigInt('0b' + entropyBits).toString(16).padStart(64, '0');
+          seedInput.value = hex;
+        });
+      } catch (e) {
+        // Silent fail if invalid mnemonic — no visualization
+        alert("Invalid mnemonic: " + e.message);
+      }
     }
 
+    // Converts and visualizes a 64-char hex string as entropy
     function visualizeHex() {
       const hex = seedInput.value.trim().toLowerCase().replace(/[^a-f0-9]/g, '');
       if (hex.length !== 64) return;
+
       const binary = BigInt("0x" + hex).toString(2).padStart(256, '0');
       renderBits(binary);
+
       if (wordlist.length === 2048) {
         const entropyBytes = [];
         for (let i = 0; i < 256; i += 8) {
           const byte = binary.slice(i, i + 8);
           entropyBytes.push(parseInt(byte, 2));
         }
+
         crypto.subtle.digest("SHA-256", new Uint8Array(entropyBytes)).then(hashBuffer => {
           const hashBytes = new Uint8Array(hashBuffer);
           const checksumBits = hashBytes[0].toString(2).padStart(8, "0").slice(0, 8);
           const fullBits = binary + checksumBits;
+
           const words = [];
           for (let i = 0; i < 264; i += 11) {
             const segment = fullBits.slice(i, i + 11);
             const index = parseInt(segment, 2);
             words.push(wordlist[index] || "???");
           }
+
           mnemonicInput.value = words.join(" ");
         });
       }
     }
 
+    // Updates background color of the grid wrapper
     function updateGridBackground() {
       const gridWrapper = document.querySelector(".grid-wrapper");
       const color = document.getElementById("gridBackground").value;
       gridWrapper.style.backgroundColor = color;
     }
 
+    // Compares brightness of color 1 and 0 to enforce "1 should be darker than 0"
     function isColorOneDarker() {
       const c1 = document.getElementById("colorOne").value;
       const c0 = document.getElementById("colorZero").value;
@@ -383,11 +447,15 @@
 
       return luminance(hexToRgb(c1)) < luminance(hexToRgb(c0));
     }
-
+    // Setup event listeners and initialize UI
     window.addEventListener("DOMContentLoaded", () => {
+      // Trigger visualization from mnemonic input
       mnemonicInput.addEventListener("input", visualizeSeed);
+
+      // Trigger visualization from hex input
       seedInput.addEventListener("input", visualizeHex);
 
+      // Update pixel colors when color for 0 changes
       document.getElementById("colorZero").addEventListener("input", () => {
         pixelElements.forEach(p => {
           if (!p.classList.contains("active")) {
@@ -396,6 +464,7 @@
         });
       });
 
+      // Update pixel colors when color for 1 changes
       document.getElementById("colorOne").addEventListener("input", () => {
         pixelElements.forEach(p => {
           if (p.classList.contains("active")) {
@@ -404,11 +473,13 @@
         });
       });
 
+      // Update background of grid wrapper
       document.getElementById("gridBackground").addEventListener("input", () => {
         const gridWrapper = document.querySelector(".grid-wrapper");
         gridWrapper.style.backgroundColor = document.getElementById("gridBackground").value;
       });
 
+      // Initialize grid and optionally sync with any pre-filled inputs
       initializeGrid();
       visualizeSeed();
       visualizeHex();
