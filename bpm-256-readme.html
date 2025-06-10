@@ -44,7 +44,7 @@
     <li>Visual representation of 256-bit entropy</li>
     <li>Support for BIP-39 seed phrases and raw HEX input</li>
     <li>Editable 16×16 pixel grid (1 pixel = 1 bit)</li>
-    <li>Custom colors for bits 0 and 1</li>
+    <li>Custom colors for bits 0 and 1, and grid color</li>
     <li>PNG export</li>
     <li>Validity check and automatic checksum generation (BIP-39 compliant)</li>
     <li>Fully client-side and offline-capable</li>
@@ -52,15 +52,33 @@
   </ul>
 
   <h2>Specification</h2>
-  <ul>
-    <li>Protocol: <code>bpm-256</code> (Bitcoin Pixel Mnemonic)</li>
-    <li>Input entropy: 256 bits (32 bytes)</li>
-    <li>Output: 24-word BIP-39 seed phrase</li>
-    <li>Grid size: 16×16 pixels</li>
-    <li>1 pixel = 1 bit (white = 0, black = 1 by default)</li>
-    <li>Checksum: 8 bits derived from SHA-256(entropy)</li>
-    <li>Wordlist: standard English BIP-39 (2048 words)</li>
-  </ul>
+
+<p><strong>Protocol:</strong><br>
+bpm-256 (Bitcoin Pixel Mnemonic)</p>
+
+<p><strong>Input entropy:</strong><br>
+256 bits (32 bytes)</p>
+
+<p><strong>Output:</strong><br>
+24-word BIP-39 seed phrase</p>
+
+<p><strong>Grid size:</strong><br>
+16×16 pixels<br>
+1 pixel = 1 bit (white = 0, black = 1 by default)</p>
+
+<p><strong>Checksum:</strong><br>
+8 bits derived from SHA-256(entropy)</p>
+
+<p><strong>Wordlist:</strong><br>
+Standard English BIP-39 (2048 words)</p>
+
+<p><strong>Input/Output Modes:</strong><br>
+– The user can enter either a 24-word BIP-39 seed phrase or a 64-character hexadecimal string to generate a PNG image with pixels and grid.<br>
+– Alternatively, the user can draw directly on the pixel grid; as a result, both the corresponding hex and 24-word seed phrase will be generated.</p>
+
+<p><strong>Visual rule:</strong><br>
+Bit value <code>1</code> must always be visually darker than bit value <code>0</code>, regardless of chosen colors.</p>
+
 
   <h2>Examples</h2>
 
@@ -70,6 +88,7 @@
   <p><strong>Mnemonic:</strong></p>
   <pre>twelve twelve twelve twelve twelve twelve twelve twelve twelve twelve twelve twelve
 world world world world world world world world world world world world</pre>
+  <p><strong>Colors:</strong> 0 = white, 1 = red</p>
   <img src="examples/1.png" alt="Example 1">
   <hr>
 
@@ -79,6 +98,7 @@ world world world world world world world world world world world world</pre>
   <p><strong>Mnemonic:</strong></p>
   <pre>abandon amount absorb abandon hybrid always about theme disease advance scan wrap
 cable limit winter zoo avocado wedding zone lend wave zoo zoo unknown</pre>
+  <p><strong>Colors:</strong> 0 = yellow, 1 = blue</p>
   <img src="examples/2.png" alt="Example 2">
   <hr>
 
@@ -88,6 +108,7 @@ cable limit winter zoo avocado wedding zone lend wave zoo zoo unknown</pre>
   <p><strong>Mnemonic:</strong></p>
   <pre>primary famous fever fetch pipe print primary enjoy fiber fetch next prize
 primary click find fetch fetch pull pride primary follow festival fetch pool</pre>
+  <p><strong>Colors:</strong> 0 = white, 1 = blue</p>
   <img src="examples/3.png" alt="Example 3">
   <hr>
 
@@ -97,6 +118,7 @@ primary click find fetch fetch pull pride primary follow festival fetch pool</pr
   <p><strong>Mnemonic:</strong></p>
   <pre>enjoy over narrow shuffle over endorse step mask build release misery turkey
 remove switch power transfer pioneer female ignore ankle rule help sustain hockey</pre>
+  <p><strong>Colors:</strong> 0 = white, 1 = black</p>
   <img src="examples/4.png" alt="Example 4">
 
   <hr>
