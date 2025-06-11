@@ -26,9 +26,10 @@ Wordlist: standard English BIP-39 (2048 words)
 
 ---
 
-### Author
-
-Created by [@bpm_256](https://twitter.com/pixel_mnemonic)  
-Website: [bpm-256.com](https://www.bpm-256.com)
-
-MIT License © 2025
+ Author: Aleksandr Yashchuk (2025)
+  License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+  
+  GitHub:   https://github.com/bpm-256/bpm-256
+  Website:  https://bpm-256.com
+  Twitter:  https://twitter.com/pixel_mnemonic
+  Contact:  1548xfr@gmail.com
